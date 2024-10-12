@@ -1,0 +1,8 @@
+# to generate auth_token
+# https://www.blitter.se/utils/basic-authentication-header-generator/
+#
+
+[default]
+auth_token=
+url_api=https://rivadelgarda.pnrr.comunweb.it/api/openapi/
+log_level=DEBUG

@@ -74,16 +74,26 @@ class openService():
         return response
 
 
-    def read(self,data):
-        # data = id
-        response = self.doRequest("GET","%s/%s" % (self.apiread,data))
+    def getItem(self,api_entry_point,fields_to_extract=None):
+        # Return a dictionary with fields specified
+        full_api_url = self.api_url + api_entry_point
+        
+        response = os.doRequest('GET',full_api_url)
+        json = response.json()
 
-        self.printResponse(response)
-        return response        
+        if fields_to_extract:
+            res_dict = {}
+            for field in fields_to_extract:
+                res_dict[field]=item[field]
+            return res_dict
+        else:
+            return json
+        
 
-
-    def getAllItems(self,api_entry_point,fields_to_extract):
-
+    def getAllItems(self,api_entry_point,fields_to_extract, follow_pagination = True):
+        # Puts all items in a list, extracting fields specified in fields_to_extract list
+        # Follows pagination if available, you can disable this with the corrispondent param
+        
         full_api_url = self.api_url + api_entry_point
         response = os.doRequest("GET",full_api_url)
         json = response.json()
@@ -99,11 +109,10 @@ class openService():
                     newitem[field]=item[field]
                 allitems.append(newitem)
 
-            if lastlap:
+            if lastlap or not follow_pagination:
                 return(allitems)
                 break
 
-        
             response = os.doRequest("GET",json['next'])
             json = response.json()
 
@@ -126,12 +135,11 @@ if __name__ == "__main__":
         string += item['name']
         string += '|' + re.sub('/api/openapi/servizi/.*#','/Servizi/',item['uri'])
         string += '|' + item['has_service_status'][0]
-        url_contatto = "https://rivadelgarda.pnrr.comunweb.it/api/openapi/classificazioni/punti-di-contatto/"
+        url_contatto = "classificazioni/punti-di-contatto/"
         url_contatto += item['has_online_contact_point'][0]['id'].replace(':','\:')
-        response = os.doRequest('GET',url_contatto)
-        json = response.json()
 
-        string += '|' + json['name']
+        contatto = os.getItem(url_contatto,['name'])
+        string += '|' + contatto['name']
         print(string)
 
         
